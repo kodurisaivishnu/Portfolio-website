@@ -20,11 +20,15 @@ const Contact = () => {
     console.log(formData);
 
     try {
-      const response = await fetch("http://localhost:5000/api/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      // const response = await fetch("http://localhost:5000/api/send-email", {
+        const response = await fetch(
+          "https://portfolio-website-pjir.onrender.com/api/send-email",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData),
+          }
+        );
 
       const result = await response.json();
 
