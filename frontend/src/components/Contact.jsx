@@ -11,38 +11,44 @@ const Contact = () => {
     message: "",
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+    setIsSubmitting(true);
+
+    const toastId = toast.loading("Sending message...");
 
     try {
-      // const response = await fetch("http://localhost:5000/api/send-email", {
-        const response = await fetch(
-          "https://portfolio-website-pjir.onrender.com/api/send-email",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
-          }
-        );
+      const response = await fetch(
+        "https://portfolio-website-pjir.onrender.com/api/send-email",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const result = await response.json();
 
       if (response.ok) {
-        toast.success("Email sent successfully!");
+        toast.success("Message sent successfully!", { id: toastId });
         setFormData({ name: "", email: "", subject: "", message: "" });
       } else {
-        toast.error(`Error: ${result.message || "Failed to send email."}`);
+        toast.error(result.message || "Failed to send message.", {
+          id: toastId,
+        });
       }
     } catch (error) {
-      toast.error("Network error. Please try again.");
+      toast.error("Network error. Please try again.", { id: toastId });
+    } finally {
+      setIsSubmitting(false);
     }
   };
-  
 
   return (
     <motion.section
@@ -175,8 +181,9 @@ const Contact = () => {
             </div>
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors">
-              Send Message
+              disabled={isSubmitting}
+              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50">
+              {isSubmitting ? "Sending..." : "Send Message"}
             </button>
           </form>
         </motion.div>
