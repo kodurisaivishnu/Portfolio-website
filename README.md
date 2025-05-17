@@ -30,10 +30,4 @@ This is a personal portfolio website built with a full-stack setup. It showcases
 - CORS (enabled)
 - Deployed on **Render**
 
----
-
-## 📬 Contact Form (How It Works)
-
-The **contact form** on the frontend sends user input to the backend API hosted on Render.  
-The API route is:
 
