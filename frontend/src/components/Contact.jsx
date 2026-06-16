@@ -17,6 +17,24 @@ const Contact = () => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
+  const collectMeta = () => {
+    try {
+      return {
+        pageUrl: window.location.href,
+        referrer: document.referrer || "direct",
+        localTime: new Date().toString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+        platform: navigator.platform,
+        screen: `${window.screen.width}x${window.screen.height}`,
+        viewport: `${window.innerWidth}x${window.innerHeight}`,
+        userAgent: navigator.userAgent,
+      };
+    } catch {
+      return {};
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -29,7 +47,7 @@ const Contact = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({ ...formData, meta: collectMeta() }),
         }
       );
 
