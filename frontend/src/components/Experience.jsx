@@ -1,70 +1,79 @@
 import { motion } from "framer-motion";
-
-const experiences = [
-  {
-    title: "GSSoC'24 Contributor",
-    company: "GirlScript Summer of Code",
-    location: "Remote",
-    duration: "Oct 2024 – Nov 2024",
-    description: [
-      "Exposed to various open-source projects.",
-      "Worked with the MERN (MongoDB, Express.js, React.js, Node.js) stack.",
-    ],
-  },
-  {
-    title: "Web Development Intern",
-    company: "Codsoft",
-    location: "Remote",
-    duration: "Aug 2023 – Sep 2023",
-    description: [
-      "Worked on the design and development of fully responsive web pages.",
-      "Utilized HTML, CSS, and JavaScript for front-end development.",
-    ],
-  },
-];
+import { ExternalLink, Linkedin } from "lucide-react";
+import SectionHeading from "./ui/SectionHeading";
+import { experiences } from "../data/portfolio";
 
 const Experience = () => {
   return (
-    <motion.section
-      id="experience"
-      className="py-20 px-4 md:px-8 max-w-5xl mx-auto"
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-      >
-      <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-indigo-500">
-        Experience
-      </h2>
+    <section id="experience" className="px-4 md:px-8 py-24 max-w-5xl mx-auto">
+      <SectionHeading index="02" tag="Experience" title="Where I've made impact" />
 
-      <div className="w-full space-y-8">
-        {experiences.map((exp, index) => (
+      <div className="relative ml-2">
+        {/* vertical line */}
+        <span className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-indigo-500 via-cyan-400 to-transparent" />
+
+        {experiences.map((exp, i) => (
           <motion.div
-            key={index}
-            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg"
-            initial={{ opacity: 0, x: 50 }}
+            key={exp.company}
+            className="relative pl-11 pb-12 last:pb-0"
+            initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.2, duration: 0.6 }}
-            >
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-xl font-semibold text-indigo-600">
-                {exp.title}
-              </h3>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {exp.duration}
-              </span>
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6, delay: i * 0.1 }}>
+            <span className="absolute left-0 top-1.5 h-5 w-5 rounded-full bg-white dark:bg-gray-950 border-[3px] border-indigo-500 shadow-[0_0_0_4px_rgba(99,102,241,0.15)]" />
+
+            <div className="glass rounded-2xl p-6 hover:-translate-y-1 transition-transform">
+              <div className="flex flex-wrap justify-between items-baseline gap-2">
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
+                  {exp.role}{" "}
+                  <span className="text-cyan-600 dark:text-cyan-400">
+                    · {exp.company}
+                  </span>
+                </h3>
+                <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
+                  {exp.duration}
+                </span>
+              </div>
+
+              <div className="mt-2 flex items-center gap-3">
+                <span className="inline-block text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30">
+                  {exp.mode}
+                </span>
+                {exp.cert && (
+                  <a
+                    href={exp.cert}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:underline">
+                    <ExternalLink size={13} /> Certificate
+                  </a>
+                )}
+                {exp.linkedin && (
+                  <a
+                    href={exp.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:underline">
+                    <Linkedin size={13} /> LinkedIn
+                  </a>
+                )}
+              </div>
+
+              <ul className="mt-4 space-y-2">
+                {exp.points.map((p, idx) => (
+                  <li
+                    key={idx}
+                    className="relative pl-5 text-sm text-gray-600 dark:text-gray-300">
+                    <span className="absolute left-0 text-cyan-500">▹</span>
+                    {p}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <h4 className="text-md font-medium text-gray-800 dark:text-gray-200">
-              {exp.company} — <span className="italic">{exp.location}</span>
-            </h4>
-            <ul className="list-disc ml-6 mt-3 space-y-1 text-gray-700 dark:text-gray-300 text-sm">
-              {exp.description.map((item, idx) => (
-                <li key={idx}>{item}</li>
-              ))}
-            </ul>
           </motion.div>
         ))}
       </div>
-    </motion.section>
+    </section>
   );
 };
 

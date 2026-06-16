@@ -1,83 +1,35 @@
-import {
-  FaJava,
-  FaPython,
-  FaNodeJs,
-  FaGitAlt,
-  FaGithub,
-  FaLinux,
-  FaWindows,
-} from "react-icons/fa";
-// import { SiVisualstudio } from "react-icons/si";
-import { FaCode } from "react-icons/fa";
-
-import {
-  SiC,
-  SiCplusplus,
-  SiJavascript,
-  SiMysql,
-  SiMongodb,
-  SiExpress,
-  SiReact,
-  SiAnaconda,
-} from "react-icons/si";
-import Card from "./ui/Card";
-
-const skills = [
-  { name: "Java", icon: <FaJava size={40} className="text-red-600" /> },
-  {
-    name: "JavaScript",
-    icon: <SiJavascript size={40} className="text-yellow-400" />,
-  },
-  { name: "MySQL", icon: <SiMysql size={40} className="text-blue-600" /> },
-  { name: "React.js", icon: <SiReact size={40} className="text-blue-400" /> },
-  { name: "Python", icon: <FaPython size={40} className="text-yellow-500" /> },
-  { name: "Node.js", icon: <FaNodeJs size={40} className="text-green-600" /> },
-  { name: "Git", icon: <FaGitAlt size={40} className="text-orange-500" /> },
-  { name: "C++", icon: <SiCplusplus size={40} className="text-blue-400" /> },
-  {
-    name: "Express.js",
-    icon: <SiExpress size={40} className="text-gray-700" />,
-  },
-  { name: "MongoDB", icon: <SiMongodb size={40} className="text-green-500" /> },
-  { name: "C", icon: <SiC size={40} className="text-blue-500" /> },
-  {
-    name: "GitHub",
-    icon: <FaGithub size={40} className="text-black dark:text-white" />,
-  },
-  {
-    name: "VS Code",
-    icon: <FaCode size={40} className="text-blue-500" />,
-  },
-  {
-    name: "Anaconda",
-    icon: <SiAnaconda size={40} className="text-green-700" />,
-  },
-  {
-    name: "Linux",
-    icon: <FaLinux size={40} className="text-black dark:text-white" />,
-  },
-  { name: "Windows", icon: <FaWindows size={40} className="text-blue-500" /> },
-];
+import { motion } from "framer-motion";
+import SectionHeading from "./ui/SectionHeading";
+import { skillGroups } from "../data/portfolio";
 
 const TechnicalSkills = () => {
   return (
-    <section className="px-6 md:px-16 py-12 text-center">
-      <h2 className="text-3xl md:text-4xl font-bold mb-10 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-pink-500">
-        Technical Skills
-      </h2>
+    <section id="skills" className="px-4 md:px-8 py-24 max-w-7xl mx-auto">
+      <SectionHeading index="03" tag="Skills" title="My technical toolkit" />
 
-
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8 justify-items-center">
-        {skills.map((skill, idx) => (
-          <Card
-            key={idx}
-            className="p-4 flex flex-col items-center gap-2 hover:scale-105 transition-transform duration-300 shadow-md">
-            {skill.icon}
-            <span className="text-base font-medium mt-1 text-gray-700 dark:text-white">
-              {skill.name}
-            </span>
-          </Card>
+      <div className="grid sm:grid-cols-2 gap-6">
+        {skillGroups.map((group, i) => (
+          <motion.div
+            key={group.title}
+            className="glass rounded-2xl p-6 hover:-translate-y-1.5 transition-transform"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5, delay: i * 0.1 }}>
+            <h4 className="flex items-center gap-3 text-lg font-bold text-gray-900 dark:text-white mb-5">
+              <span className="text-2xl">{group.icon}</span>
+              {group.title}
+            </h4>
+            <div className="flex flex-wrap gap-2.5">
+              {group.items.map((item) => (
+                <span
+                  key={item}
+                  className="px-3 py-1.5 rounded-lg font-mono text-sm bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-indigo-500 hover:to-cyan-500 hover:text-white hover:border-transparent transition-all cursor-default">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </motion.div>
         ))}
       </div>
     </section>

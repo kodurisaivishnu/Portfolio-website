@@ -1,4 +1,4 @@
-import { Github, Linkedin, Mail } from "lucide-react";
+import { Github, Linkedin, Mail, Phone } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -89,11 +89,11 @@ const Contact = () => {
             <div className="flex items-center gap-3">
               <Linkedin className="h-5 w-5 text-indigo-500" />
               <a
-                href="https://linkedin.com/in/kodurisaivishnu"
+                href="https://www.linkedin.com/in/koduri-sai-vishnu-780b2923b/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-indigo-600 transition-colors text-sm md:text-base">
-                linkedin.com/in/kodurisaivishnu
+                linkedin.com/in/koduri-sai-vishnu
               </a>
             </div>
             <div className="flex items-center gap-3">
@@ -104,6 +104,14 @@ const Contact = () => {
                 rel="noopener noreferrer"
                 className="hover:text-indigo-600 transition-colors text-sm md:text-base">
                 github.com/kodurisaivishnu
+              </a>
+            </div>
+            <div className="flex items-center gap-3">
+              <Phone className="h-5 w-5 text-indigo-500" />
+              <a
+                href="tel:+918639814270"
+                className="hover:text-indigo-600 transition-colors text-sm md:text-base">
+                +91 86398 14270
               </a>
             </div>
           </div>

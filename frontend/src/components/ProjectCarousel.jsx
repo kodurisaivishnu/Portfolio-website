@@ -1,113 +1,86 @@
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules"; ///Autoplay
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 import { motion } from "framer-motion";
-import { ExternalLink, GithubIcon } from "lucide-react";
-
-const projects = [
-  {
-    title: "AI Interview System",
-    image: "/p1_vitual_interview.png", 
-    description:
-      "A real-time AI mock interview system using Gemini API and Firebase. For All Domains.",
-    liveLink: "https://interview-system.onrender.com/",
-    githubLink: "https://github.com/kodurisaivishnu/AI-Mocker-Interview",
-  },
-  {
-    title: "Socket Chat Application",
-    image: "/p2_chat_app.png",
-    description:
-      "Real-time chat application using Socket.io and the MERN stack, supporting multiple concurrent users.",
-    liveLink: "https://socket-chat-app-iyex.onrender.com/",
-    githubLink: "https://github.com/kodurisaivishnu/Socket-chat-app",
-  },
-  {
-    title: "Airbnb UI Design",
-    image: "/p4_air_bnb.png",
-    description: "Airbnb UI design clone to challenge my development skills.",
-    liveLink: "https://github.com/kodurisaivishnu/wanderlust-mern-project-",
-    githubLink: "https://github.com/kodurisaivishnu/wanderlust-mern-project-",
-  },
-  {
-    title: "Personal Portfolio",
-    image: "/p3_portfolio.png",
-    description: "This is my personal portfolio to showcase my skills & works.",
-    liveLink: "https://socket-chat-app-iyex.onrender.com/",
-    githubLink: "https://github.com/kodurisaivishnu/Socket-chat-app",
-  },
-];
+import { ExternalLink, Github } from "lucide-react";
+import SectionHeading from "./ui/SectionHeading";
+import { projects } from "../data/portfolio";
 
 const ProjectCarousel = () => {
   return (
-    <section className="px-6 md:px-16 py-12 text-center bg-gradient-to-br from-gray-100 to-white dark:from-gray-900 dark:to-black">
-      <motion.h2
-        className="text-3xl md:text-4xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-500 to-indigo-600"
-        initial={{ opacity: 0, y: -30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}>
-        My Projects
-      </motion.h2>
+    <section id="projects" className="px-4 md:px-8 py-24 max-w-7xl mx-auto">
+      <SectionHeading index="04" tag="Projects" title="Things I've built" />
 
-      <Swiper
-        modules={[Navigation, Pagination, Autoplay]} 
-        navigation
-        pagination={{ clickable: true }}
-        autoplay={{
-          delay: 2500,
-          disableOnInteraction: false,
-          // reverseDirection: true, //  Scroll left
-        }}
-        loop={true}
-        spaceBetween={30}
-        slidesPerView={1}
-        breakpoints={{
-          768: { slidesPerView: 2 },
-          1024: { slidesPerView: 3 },
-        }}
-        className="max-w-6xl mx-auto">
-        {projects.map((project, index) => (
-          <SwiperSlide key={index}>
-            <motion.div
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col h-full"
-              whileHover={{ scale: 1.02 }}
-              transition={{ type: "spring", stiffness: 200 }}>
-              <img
-                src={project.image}
-                alt={project.title}
-                className="w-full h-48 object-cover"
-              />
-              <div className="flex justify-between items-center px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {projects.map((p, i) => (
+          <motion.div
+            key={p.title}
+            className="group relative glass rounded-2xl p-7 flex flex-col overflow-hidden hover:-translate-y-2 transition-transform duration-300"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5, delay: i * 0.12 }}>
+            {/* top accent */}
+            <span className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-cyan-400 to-fuchsia-500 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-400 z-10" />
+
+            {/* screenshot or branded placeholder */}
+            <div className="-mx-7 -mt-7 mb-5 h-44 overflow-hidden bg-gray-100 dark:bg-gray-900 relative">
+              {p.image ? (
+                <img
+                  src={p.image}
+                  alt={p.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              ) : (
+                <div
+                  className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${
+                    p.accent || "from-indigo-500 to-cyan-500"
+                  }`}>
+                  <span className="text-6xl drop-shadow-lg group-hover:scale-110 transition-transform duration-500">
+                    {p.icon}
+                  </span>
+                </div>
+              )}
+              <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/40 text-white text-xs font-medium backdrop-blur">
+                {p.type}
+              </div>
+            </div>
+
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              {p.title}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 flex-grow">
+              {p.description}
+            </p>
+
+            <div className="flex flex-wrap gap-2 my-5">
+              {p.tags.map((t) => (
+                <span
+                  key={t}
+                  className="text-xs px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20">
+                  {t}
+                </span>
+              ))}
+            </div>
+
+            <div className="flex gap-5">
+              {p.live && (
                 <a
-                  href={project.githubLink}
+                  href={p.live}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-800 dark:text-white hover:text-purple-600 flex items-center gap-1 text-sm font-medium">
-                  <GithubIcon size={18} />
-                  GitHub
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-white hover:text-cyan-500 dark:hover:text-cyan-300 transition-colors">
+                  <ExternalLink size={16} /> Live
                 </a>
-                <a
-                  href={project.liveLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline flex items-center gap-1 text-sm font-medium">
-                  <ExternalLink size={18} />
-                  Live Demo
-                </a>
-              </div>
-              <div className="p-4 flex flex-col justify-between flex-grow">
-                <h3 className="text-lg font-semibold text-purple-700 dark:text-purple-400 mb-2">
-                  {project.title}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  {project.description}
-                </p>
-              </div>
-            </motion.div>
-          </SwiperSlide>
+              )}
+              <a
+                href={p.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-white hover:text-cyan-500 dark:hover:text-cyan-300 transition-colors">
+                <Github size={16} /> GitHub
+              </a>
+            </div>
+          </motion.div>
         ))}
-      </Swiper>
+      </div>
     </section>
   );
 };
