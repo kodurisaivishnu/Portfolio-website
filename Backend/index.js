@@ -16,11 +16,17 @@ app.use(express.json());
 
 const makeTransporter = () =>
   nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // upgrade to TLS via STARTTLS — port 587 avoids the 465 hang on Render
+    requireTLS: true,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
   });
 
 // ---- health checks ----
