@@ -14,6 +14,52 @@ app.set("trust proxy", true);
 app.use(cors());
 app.use(express.json());
 
+const makeTransporter = () =>
+  nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+// ---- health checks ----
+// Liveness: is the server up?
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: Math.round(process.uptime()),
+    time: new Date().toISOString(),
+    emailConfigured: Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS),
+  });
+});
+
+// Readiness: can we actually authenticate with Gmail? (no email is sent)
+app.get("/api/health/email", async (req, res) => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    return res.status(503).json({
+      emailReady: false,
+      reason: "missing_credentials",
+      message: "EMAIL_USER / EMAIL_PASS are not set on the server.",
+    });
+  }
+  try {
+    await makeTransporter().verify();
+    res.status(200).json({
+      emailReady: true,
+      user: process.env.EMAIL_USER,
+      message: "SMTP credentials are valid — ready to send.",
+    });
+  } catch (error) {
+    res.status(502).json({
+      emailReady: false,
+      reason: "auth_failed",
+      message: error.message,
+      hint: "App password may be expired/revoked, or 2FA/app-password settings changed.",
+    });
+  }
+});
+
 const esc = (s = "") =>
   String(s)
     .replace(/&/g, "&amp;")
@@ -68,13 +114,7 @@ app.post("/api/send-email", async (req, res) => {
     .join("\n");
 
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    const transporter = makeTransporter();
 
     const mailOptions = {
       from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
