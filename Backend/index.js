@@ -1,5 +1,4 @@
-import nodemailer from "nodemailer";
-import express from 'express';
+import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
@@ -14,57 +13,36 @@ app.set("trust proxy", true);
 app.use(cors());
 app.use(express.json());
 
-const makeTransporter = () =>
-  nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false, // upgrade to TLS via STARTTLS — port 587 avoids the 465 hang on Render
-    requireTLS: true,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+// ---- email config (Resend HTTPS API — works on hosts that block SMTP) ----
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+// Recipient = the portfolio owner's inbox. EMAIL_USER kept for backward compat.
+const MAIL_TO = process.env.MAIL_TO || process.env.EMAIL_USER;
+// Sender. onboarding@resend.dev needs NO verified domain, but only delivers to
+// the email you registered your Resend account with — which is MAIL_TO here.
+const MAIL_FROM = process.env.MAIL_FROM || "Portfolio Contact <onboarding@resend.dev>";
+
+const sendEmail = async ({ subject, html, text, replyTo }) => {
+  const resp = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
     },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 20000,
+    body: JSON.stringify({
+      from: MAIL_FROM,
+      to: [MAIL_TO],
+      reply_to: replyTo,
+      subject,
+      html,
+      text,
+    }),
   });
-
-// ---- health checks ----
-// Liveness: is the server up?
-app.get("/api/health", (req, res) => {
-  res.status(200).json({
-    status: "ok",
-    uptime: Math.round(process.uptime()),
-    time: new Date().toISOString(),
-    emailConfigured: Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS),
-  });
-});
-
-// Readiness: can we actually authenticate with Gmail? (no email is sent)
-app.get("/api/health/email", async (req, res) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    return res.status(503).json({
-      emailReady: false,
-      reason: "missing_credentials",
-      message: "EMAIL_USER / EMAIL_PASS are not set on the server.",
-    });
+  if (!resp.ok) {
+    const detail = await resp.text();
+    throw new Error(`Resend ${resp.status}: ${detail}`);
   }
-  try {
-    await makeTransporter().verify();
-    res.status(200).json({
-      emailReady: true,
-      user: process.env.EMAIL_USER,
-      message: "SMTP credentials are valid — ready to send.",
-    });
-  } catch (error) {
-    res.status(502).json({
-      emailReady: false,
-      reason: "auth_failed",
-      message: error.message,
-      hint: "App password may be expired/revoked, or 2FA/app-password settings changed.",
-    });
-  }
-});
+  return resp.json();
+};
 
 const esc = (s = "") =>
   String(s)
@@ -78,22 +56,66 @@ const getClientIp = (req) => {
   return req.ip || req.socket?.remoteAddress || "unknown";
 };
 
+// ---- health checks ----
+// Liveness: is the server up?
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: Math.round(process.uptime()),
+    time: new Date().toISOString(),
+    provider: "resend",
+    emailConfigured: Boolean(RESEND_API_KEY && MAIL_TO),
+  });
+});
+
+// Readiness: is the Resend API key valid? (no email is sent)
+app.get("/api/health/email", async (req, res) => {
+  if (!RESEND_API_KEY || !MAIL_TO) {
+    return res.status(503).json({
+      emailReady: false,
+      reason: "missing_credentials",
+      message: "RESEND_API_KEY and/or MAIL_TO (EMAIL_USER) are not set.",
+    });
+  }
+  try {
+    const r = await fetch("https://api.resend.com/domains", {
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
+    });
+    if (r.ok) {
+      return res.status(200).json({
+        emailReady: true,
+        to: MAIL_TO,
+        from: MAIL_FROM,
+        message: "Resend API key is valid — ready to send.",
+      });
+    }
+    return res.status(502).json({
+      emailReady: false,
+      reason: "auth_failed",
+      message: `Resend ${r.status}: ${await r.text()}`,
+      hint: "API key may be wrong or revoked. Check RESEND_API_KEY on the server.",
+    });
+  } catch (error) {
+    res.status(502).json({
+      emailReady: false,
+      reason: "request_failed",
+      message: error.message,
+    });
+  }
+});
+
 app.post("/api/send-email", async (req, res) => {
   const { name, email, subject, message, meta = {} } = req.body;
 
-  // ---- server-derived metadata (authoritative) ----
-  const serverMeta = {
-    ip: getClientIp(req),
-    userAgent: req.headers["user-agent"] || "unknown",
-    referer: req.headers["referer"] || meta.pageUrl || "direct",
-    receivedAt: new Date().toISOString(),
-  };
+  if (!RESEND_API_KEY) {
+    return res.status(503).json({ message: "Email service not configured." });
+  }
 
-  // ---- merge with client-supplied metadata ----
+  // ---- metadata: server-derived (authoritative) + client-supplied ----
   const metadata = {
-    "IP address": serverMeta.ip,
-    "User agent": serverMeta.userAgent,
-    "Page URL": meta.pageUrl || serverMeta.referer,
+    "IP address": getClientIp(req),
+    "User agent": req.headers["user-agent"] || "unknown",
+    "Page URL": meta.pageUrl || req.headers["referer"] || "direct",
     Referrer: meta.referrer || "direct",
     "Local time": meta.localTime || "—",
     Timezone: meta.timezone || "—",
@@ -101,7 +123,7 @@ app.post("/api/send-email", async (req, res) => {
     Screen: meta.screen || "—",
     Viewport: meta.viewport || "—",
     Platform: meta.platform || "—",
-    "Received (server, UTC)": serverMeta.receivedAt,
+    "Received (server, UTC)": new Date().toISOString(),
   };
 
   const metaRows = Object.entries(metadata)
@@ -120,13 +142,9 @@ app.post("/api/send-email", async (req, res) => {
     .join("\n");
 
   try {
-    const transporter = makeTransporter();
-
-    const mailOptions = {
-      from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
-      replyTo: email,
-      to: process.env.EMAIL_USER,
+    await sendEmail({
       subject: `Contact Form: ${subject}`,
+      replyTo: email,
       text:
         `Name: ${name}\nEmail: ${email}\n\n${message}\n\n` +
         `--- Visitor metadata ---\n${metaText}`,
@@ -149,9 +167,8 @@ app.post("/api/send-email", async (req, res) => {
           <table style="border-collapse:collapse;font-size:12px">${metaRows}</table>
         </div>
       `,
-    };
+    });
 
-    await transporter.sendMail(mailOptions);
     res.status(200).json({ message: "Email sent successfully!" });
   } catch (error) {
     console.error(error.message);
